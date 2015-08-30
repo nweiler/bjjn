@@ -1,86 +1,63 @@
-var async = require('async'),
-    api = require('./lib/api.js'),
-    basicAuth = require('basic-auth'),
-    bodyParser = require('body-parser'),
-    express = require('express'),
-    app = express(),
-    ejs = require('ejs'),
-    jade = require('jade'),
-    models = require('./lib/models'),
-    mongoose = require('mongoose'),
-    router = express.Router(),
-    LocalStrategy = require('passport-local').Strategy;
-  
+var MongoClient = require('mongodb').MongoClient;
+var assert = require('assert');
 
-module.exports = exports = start_api;
+var api = {};
+module.exports = api;
 
-function start_api(server, app) {
-  var mongo_host;
-  var mongo_db;
-  var url;
-  var level;
-  var log;
+var url = 'mongodb://localhost:27017/entries'
 
-  db.on('error', function() {} )
+MongoClient.connect(url, function(e, db) {
+  assert.equal(null, e);
+  console.log("Connected to Mongo");
+	api.create(db, function(e, d) { 
+		api.read(db, function(e, d) {
+			e == undefined ? console.log(d) : console.log(e);
+			db.close();
+		});
+	});
+});
 
-  db.once('open', function() {
-    post_db_conn();
-  })
-	
-  function post_db_conn() {
+api.create = function(db, cb) {
+  db.collection('entries').insertOne(
+  	{
+      'date': '1/1/15',
+      'location': 'RJJA Michiana',
+      'instructor':' Gary Briscoe',
+      'time': '6:30 PM',
+      'moves': [],
+      'rounds': 4,
+      'notes': 'n/a'
+    },
+    function(e, d) {
+      assert.equal(e, null);
+			e || cb(e);
+			cb(d);
+		}
+	)
 }
 
-// app setup
-app.set('port', (process.env.PORT || 3000));
-app.set('views', __dirname + '/views')
-app.set('view engine', 'ejs')
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(__dirname + '/public'))
-app.use('/', router);
+api.read = function(db, cb) {
+	db.collection('entries').find({}).toArray(
+	function(e, d) {
+		e || cb(e);
+		cb(d);
+	})
+}
 
 
-mongoose.connect('mongodb://goose_user:user_goose@dogen.mongohq.com:10009/app31863398');
-var db = mongoose.connection;
-db.once('open', function callback() {
+api.update = function(db, cb) {
+	db.collection('entries').update({ /* TODO */ },
+	function(e, d) {
+		e || cb(e);
+		cb(d);
+	})
+}
 
-  router.get('/', function(req, res) {
-      async.series([
-        function(cb) { api.get_years(db, cb) },
-        function(cb) { api.get_cities(db, cb) },
-        function(cb) { api.get_users(db, cb) },
-        function(cb) { api.get_all_guesses(db, cb) },
-        function(cb) { api.get_actuals(db, cb) },
-        function(cb) { api.get_winners(db, cb) },
-      ], function(e, results) {
-        res.render('index', {
-          'title': 'Snow Predictions',
-          'years': results[0],
-          'cities': results[1],
-          'users': results[2],
-          'guesses': results[3],
-          'actuals': results[4],
-          'winners': results[5]
-        })
-      })
-    })
-
-  router.post('/upsert_guess', function(req, res) {
-    api.upsert_guess(req, res, db, _cb)
-  })
-  
-  router.post('/delete_guess', function(req, res) {
-    api.delete_guess(req, res, db, _cb)
-  })
-
-  app.listen(app.get('port'), function() {
-    console.log('Server running at http://localhost:' + app.get('port'));
-  })
-})
-
-// ==== UTILS ==== //
-function _cb(e, d) {
-  if (e) { console.log('Error: %s', e); }
-  else { console.log('Data: %s', JSON.stringify(d, null, 4)); }
+api.delete = function(db, cb) {
+	db.collection('entries').remove({ /* TODO */ },
+	function(e, d) {
+		e || cb(e);
+		cb(d);
+	})
 }
 

@@ -17,7 +17,7 @@ MongoClient.connect(url, function(e, db) {
 	});
 });
 
-api.insert = function(db, cb) {
+api.create = function(db, cb) {
   db.collection('entries').insertOne(
   	{
       'date': '1/1/15',
@@ -37,9 +37,22 @@ api.insert = function(db, cb) {
 }
 
 api.read = function(db, cb) {
-	db.collection('entries').find({}).toArray(
-	function(e, d) {
-		e || cb(e);
+	db.collection('entries').find({}).toArray(function(e, d) {
+		e && cb(e);
+		cb(d);
+	})
+}
+
+api.update = function(db, cb) {
+	db.collection('entries').update({ /* todo */ }, function(e, d) {
+		e && cb(e);
+		cb(d);
+	})
+}
+
+api.delete = function(db, cb) {
+	db.collection('entries').remove({ /* todo */ }, function(e, d) {
+		e && cb(e);
 		cb(d);
 	})
 }
