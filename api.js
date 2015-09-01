@@ -9,7 +9,7 @@ var url = 'mongodb://localhost:27017/entries'
 MongoClient.connect(url, function(e, db) {
   assert.equal(null, e);
   console.log("Connected to Mongo");
-	api.insert(db, function(e, d) { 
+	api.create(db, function(e, d) { 
 		api.read(db, function(e, d) {
 			e == undefined ? console.log(d) : console.log(e);
 			db.close();
