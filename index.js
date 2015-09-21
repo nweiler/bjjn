@@ -37,7 +37,7 @@ MongoClient.connect(url, function(e, db) {
 
   app.get('/', function(req, res) {
     api.read_all(db, function(err, data) {
-      res.render('navbar', data);
+      res.render('index', data);
       //console.log(data);
       //res.send(data);
     });
